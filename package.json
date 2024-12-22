@@ -1,6 +1,6 @@
 {
   "author": "raffaele.montella@uniparthenope.it",
-  "description": "Signal K server plugin to manage MOB data",
+  "description": "Men Over Board Signal K server plugin",
   "dependencies": {
     "baconjs": "^0.7.88",
     "geolib": "^3.3.3",
