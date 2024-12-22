@@ -13,11 +13,12 @@
  * limitations under the License.
  */
 
-const path = require('path')
-const fs = require('fs')
+
+// The geographic library
 const geolib = require('geolib')
 
-const subscribrPeriod = 1000
+// Define the subscription period
+const subscriptionPeriod = 1000
 
 /*
  Define the plugin
@@ -93,7 +94,7 @@ module.exports = function (app) {
           subscribe: [
             {
               path: 'notifications.mob',
-              period: subscribrPeriod
+              period: subscriptionPeriod
             }]
         },
 
@@ -238,11 +239,7 @@ module.exports = function (app) {
             subscribe: [
               {
                 path: 'navigation.position',
-                period: subscribrPeriod
-              },
-              {
-                path: 'navigation.headingTrue',
-                period: subscribrPeriod
+                period: subscriptionPeriod
               }
             ]
           },
