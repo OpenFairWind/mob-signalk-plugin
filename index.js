@@ -37,6 +37,7 @@ module.exports = function (app) {
 
   // Define the plugin object and the list of the Signal K update the plugin subscribes to
   let plugin = {
+
     // The plugin unique id
     id: 'mob-signalk-plugin',
 
@@ -44,7 +45,7 @@ module.exports = function (app) {
     name: 'SignalK MOB',
 
     // The plugin description
-    description: 'Plugin that manage MOB data',
+    description: 'Men Over Board Signal K server plugin',
 
     // Subscribes
     unsubscribes: []
@@ -85,6 +86,8 @@ module.exports = function (app) {
 
     // Subscribe to the mob alarm
     app.subscriptionmanager.subscribe(
+
+        // Subscription
         {
           context: 'vessels.self',
           subscribe: [
@@ -93,30 +96,54 @@ module.exports = function (app) {
               period: subscribrPeriod
             }]
         },
+
+        // Reference data structure
         plugin.unsubscribes,
+
+        // Executed in with an error
         (err) => {
+
+          // Return the error
           app.error(err)
+
+          // Set the provider error
           app.setProviderError(err)
         },
+
+        // Executed when a delta is available
         (delta) => {
 
-
+          // Check if the update array is available
           if (delta.updates) {
+
+            // For each update in the update array...
             delta.updates.forEach((update) => {
+
+              // Check if the values array is available
               if (update.values) {
+
+                // For each value in the values array...
                 update.values.forEach((vp) => {
+
+                  // Check if the value path is "notifications.mob" (potentially pleonastic)
                   if (vp.path === 'notifications.mob') {
 
+                    // Check if the state is "emergency" and no other mob is active
                     if (!mobNotification && "state" in vp.value && vp.value.state === "emergency") {
 
+                      // Save the mob notification
                       mobNotification = vp.value
 
+                      // Start watching the vessel position
                       startWatchingPosition();
 
-                    } else if ("state" in vp.value && vp.value.state === "normal") {
+                      // Check if is active a mob and the new state is "normal"
+                    } else if (mobNotification && "state" in vp.value && vp.value.state === "normal") {
 
+                      // Stop watching the vessel position
                       stopWatchingPosition();
 
+                      // Nullize the mob
                       mobNotification = null
 
                     }
@@ -125,13 +152,25 @@ module.exports = function (app) {
               }
             })
           }
-        })
+        }
+        )
 
+    /*
+    stopWatchingPosition
+    Stop watching vessel position
+     */
     function stopWatchingPosition() {
+
+      // Unsubscribe all listeners
       onStop.forEach((f) => f())
+
+      // Clean the listeners' list
       onStop = []
+
+      // Clear the track
       track = []
 
+      // Set update the document with null
       app.handleMessage(plugin.id, {
         updates: [
           {
@@ -160,15 +199,18 @@ module.exports = function (app) {
           }
         ]
       })
-
-
     }
 
+    /*
+    startWatchingPosition
+    Start watching vessel position
+     */
     function startWatchingPosition() {
+
+      // If there are already listeners, just return (pleonastic)
       if (onStop.length > 0) return
 
-
-
+      // Initialize the document with the mob position and time
       app.handleMessage(plugin.id, {
         updates: [
           {
@@ -186,8 +228,10 @@ module.exports = function (app) {
         ]
       })
 
+      // Clean the track
       track = []
 
+      // Subscrube for navigation.position
       app.subscriptionmanager.subscribe(
           {
             context: 'vessels.self',
@@ -202,31 +246,66 @@ module.exports = function (app) {
               }
             ]
           },
+
+          // The listeners data structure
           onStop,
+
+          // Execute in case of errors
           (err) => {
+
+            // Set the error
             app.error(err)
+
+            // Set the provider error
             app.setProviderError(err)
           },
+
+          // Execute when a delta is available
           (delta) => {
+
+            // The vessel position
             let vesselPosition
 
+            // Check if the updates array is available
             if (delta.updates) {
+
+              // For each update in the updates array...
               delta.updates.forEach((update) => {
+
+                // Check if the values array is available
                 if (update.values) {
+
+                  // For each value in the values array...
                   update.values.forEach((vp) => {
+
+                    // Check if the value path is 'navigation.position' (potentially pleonastic)
                     if (vp.path === 'navigation.position') {
+
+                      // Save the vessel position
                       vesselPosition = vp.value
+
+                      // Create the mob delta
+                      let mobDelta = getMOBDelta(app,vesselPosition);
+
+                      // Update the document
+                      app.handleMessage(plugin.id, mobDelta)
+
                       // Track the positon. Only record the position every 30s.
                       if (
                           track.length === 0 ||
                           track[track.length - 1].time < Date.now() - 30 * 1000
                       ) {
+
+                        // Add the position to the track array
                         track.push({
                           position: vesselPosition,
                           time: Date.now()
                         })
-                        if (track.length > 12 * 60) {
-                          // Keep only the last 12 hours of track to avoid memory issues
+
+                        // Check if the track length reach the maximum capacity
+                        if (track.length > 12 * 120) {
+
+                          // Recycle the track
                           track.shift()
                         }
                       }
@@ -235,24 +314,18 @@ module.exports = function (app) {
                 }
               })
             }
-
-            if (mobNotification) {
-
-              let mobDelta = getMOBDelta(app,vesselPosition);
-
-              app.handleMessage(plugin.id, mobDelta)
-            }
           }
       )
     }
-
-
   }
 
   /* Register the REST API */
   plugin.registerWithRouter = function(router) {
 
+    // Create the getDelta API
     router.get('/getTrack', (req, res) => {
+
+      // Return the track
       res.json(track)
     })
 
@@ -270,14 +343,26 @@ module.exports = function (app) {
     plugin.unsubscribes = []
   }
 
+  /*
+  radsToDeg
+  Convert the radiant in degrees
+  */
   function radsToDeg(radians) {
     return (radians * 180) / Math.PI
   }
 
+  /*
+  degsToRad
+  Convert the degrees in radiant
+  */
   function degsToRad(degrees) {
     return degrees * (Math.PI / 180.0)
   }
 
+  /*
+  calc_distance
+  Compute the distance between two geographical points using the geolib library
+  */
   function calc_distance(lat1, lon1, lat2, lon2) {
     return geolib.getDistance(
         { latitude: lat1, longitude: lon1 },
@@ -286,99 +371,112 @@ module.exports = function (app) {
     )
   }
 
+  /*
+  calc_position_from
+  Compute the a position giving a starting point, heading and distance using the geolib library
+  */
   function calc_position_from(app, position, heading, distance) {
     return geolib.computeDestinationPoint(position, distance, radsToDeg(heading))
   }
 
+  /*
+  computeBowLocation
+  Compute the bow position considering the GPS offset
+  */
   function computeBowLocation(position, heading) {
+
+    // Check if the heading is defined
     if (typeof heading != 'undefined') {
+
+      // Get the distance from the bow of the gps sensor
       let gps_dist = app.getSelfPath('sensors.gps.fromBow.value')
-      app.debug('gps_dist: ' + gps_dist)
+
+      // Check if this distance is defined
       if (typeof gps_dist != 'undefined') {
+
+        // Compute the new positionm
         position = calc_position_from(app, position, heading, gps_dist)
-        app.debug('adjusted position by ' + gps_dist)
+
       }
     }
+
+    // Return the result
     return position
   }
 
-  function getMOBDelta(
-      app,
-      position
-  ) {
-      let values = []
+  /*
+  getMOBDelta
+  Prepare the mob delta giving the vessel position
+  */
+  function getMOBDelta(app, position) {
 
-      let mobPosition = app.getSelfPath('navigation.mob.position.value')
+    // Set the values array
+    let values = []
 
-    
-      if (position && mobPosition) {
+    // Get the mob position
+    let mobPosition = app.getSelfPath('navigation.mob.position.value')
 
+    // Check if vessel position and mob positions are available
+    if (position && mobPosition) {
 
-        let mobTime = app.getSelfPath('navigation.mob.time.value')
+      // Get the mob time
+      let mobTime = app.getSelfPath('navigation.mob.time.value')
 
-        let bowPosition = computeBowLocation(
-            position,
-            app.getSelfPath('navigation.headingTrue.value')
-        )
+      // Calc the bow position
+      let bowPosition = computeBowLocation( position, app.getSelfPath('navigation.headingTrue.value'))
 
-        let bearing = degsToRad(geolib.getRhumbLineBearing(bowPosition, mobPosition))
+      // Calculate the bearing to the mob
+      let bearing = degsToRad(geolib.getRhumbLineBearing(bowPosition, mobPosition))
 
-        let distance = calc_distance(
-            bowPosition.latitude,
-            bowPosition.longitude,
-            mobPosition.latitude,
-            mobPosition.longitude
-        )
+      // Calculate the distance to the mob
+      let distance = calc_distance(
+          bowPosition.latitude, bowPosition.longitude,
+          mobPosition.latitude, mobPosition.longitude )
 
+      // Add the elapsed time to the values
+      values.push({
+        path: 'navigation.mob.elapsed',
+        value: (Date.now() - mobTime) / 1000
+      })
 
+      // Add the distance to the values
+      values.push({
+        path: 'navigation.mob.distance',
+        value: distance
+      })
 
-        values.push({
+      // Add the bearing to the values
+      values.push({
+        path: 'navigation.mob.bearingTrue',
+        value: bearing
+      })
+    } else {
+      values = [
+        {
+          path: 'navigation.mob.position',
+          value: null
+        },
+        {
+          path: 'navigation.mob.time',
+          value: null
+        },
+        {
           path: 'navigation.mob.elapsed',
-          value: (Date.now() - mobTime) / 1000
-        })
-
-        values.push({
+          value: null
+        },
+        {
           path: 'navigation.mob.distance',
-          value: distance
-        })
-
-        values.push({
+          value: null
+        },
+        {
           path: 'navigation.mob.bearingTrue',
-          value: bearing
-        })
-      } else {
-        values = [
-          {
-            path: 'navigation.mob.position',
-            value: null
-          },
-          {
-            path: 'navigation.mob.time',
-            value: null
-          },
-          {
-            path: 'navigation.mob.elapsed',
-            value: null
-          },
-          {
-            path: 'navigation.mob.distance',
-            value: null
-          },
-          {
-            path: 'navigation.mob.bearingTrue',
-            value: null
-          }
-        ]
-      }
+          value: null
+        }
+      ]
+    }
 
-    //app.debug("anchor delta: " + util.inspect(delta, {showHidden: false, depth: 6}))
-      return {
-        updates: [
-          {
-            values: values
-          }
-        ]
-      }
+    // Return the delta
+    return { updates: [ { values: values } ] }
   }
 
   // Return the plugin object
