@@ -1,0 +1,32 @@
+{
+  "author": "raffaele.montella@uniparthenope.it",
+  "description": "Signal K server plugin to manage MOB data",
+  "dependencies": {
+    "baconjs": "^0.7.88",
+    "geolib": "^3.3.3",
+    "lodash": "^4.17.4"
+  },
+  "directories": {},
+  "keywords": [
+    "signalk-category-ais",
+    "signalk-webapp"
+  ],
+  "license": "Apache-2.0",
+  "main": "index.js",
+  "maintainers": [
+    "montella <raffaele.montella@uniparthenope.it>"
+  ],
+  "name": "mob-signalk-plugin",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenFairWind/mob-signalk-plugin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OpenFairWind/mob-signalk-plugin/issues"
+  },
+  "homepage": "https://github.com/OpenFairWind/mob-signalk-plugin#readme"
+}
