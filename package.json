@@ -17,7 +17,7 @@
     "montella <raffaele.montella@uniparthenope.it>"
   ],
   "name": "mob-signalk-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
