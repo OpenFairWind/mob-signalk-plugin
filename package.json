@@ -2,14 +2,15 @@
   "author": "raffaele.montella@uniparthenope.it",
   "description": "Men Over Board Signal K server plugin",
   "dependencies": {
-    "baconjs": "^0.7.88",
-    "geolib": "^3.3.3",
-    "lodash": "^4.17.4"
+    "baconjs": "^3.0.19",
+    "geolib": "^3.3.4",
+    "uuid": "^3.3.2",
+    "lodash": "^4.17.21"
   },
   "directories": {},
   "keywords": [
     "signalk-category-ais",
-    "signalk-webapp"
+    "signalk-node-server-plugin"
   ],
   "license": "Apache-2.0",
   "main": "index.js",
