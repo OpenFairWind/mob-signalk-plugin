@@ -132,9 +132,12 @@ module.exports = function (app) {
 
                       let resourceId = uuidv4();
 
+                      let timeStamp = new Date()
+
+
 
                       let body = {
-                        "name": "MOB1",
+                        "name": "MOB_" + timeStamp.toISOString(),
                         "description": "Men Over Board",
                         "feature": {
                           "type": "Feature",
@@ -146,7 +149,7 @@ module.exports = function (app) {
                             ]
                           },
                           "properties": {
-                            "time": Date.now()
+                            "timestamp": timeStamp.toISOString()
                           },
                           "id": resourceId
                         },
