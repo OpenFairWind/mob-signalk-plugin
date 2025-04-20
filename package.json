@@ -17,17 +17,17 @@
   "maintainers": [
     "montella <raffaele.montella@uniparthenope.it>"
   ],
-  "name": "mob-signalk-plugin",
+  "name": "pob-signalk-plugin",
   "version": "1.0.1",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/OpenFairWind/mob-signalk-plugin.git"
+    "url": "git+https://github.com/OpenFairWind/pob-signalk-plugin.git"
   },
   "bugs": {
-    "url": "https://github.com/OpenFairWind/mob-signalk-plugin/issues"
+    "url": "https://github.com/OpenFairWind/pob-signalk-plugin/issues"
   },
-  "homepage": "https://github.com/OpenFairWind/mob-signalk-plugin#readme"
+  "homepage": "https://github.com/OpenFairWind/pob-signalk-plugin#readme"
 }

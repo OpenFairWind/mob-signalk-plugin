@@ -39,7 +39,7 @@ module.exports = function (app) {
   let plugin = {
 
     // The plugin unique id
-    id: 'mob-signalk-plugin',
+    id: 'pob-signalk-plugin',
 
     // The plugin human-readable name
     name: 'SignalK POB',
