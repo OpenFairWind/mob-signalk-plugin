@@ -29,7 +29,7 @@ const subscriptionPeriod = 1000
 module.exports = function (app) {
 
 
-  // The MOB notification object
+  // The POB notification object
   let mobNotification = null
 
   // The next waypoint
@@ -42,7 +42,7 @@ module.exports = function (app) {
     id: 'mob-signalk-plugin',
 
     // The plugin human-readable name
-    name: 'SignalK MOB',
+    name: 'SignalK POB',
 
     // The plugin description
     description: 'Men Over Board Signal K server plugin',
@@ -68,8 +68,8 @@ module.exports = function (app) {
   // The plugin schema representing metadata and settings
   plugin.schema = {
     type: "object",
-    title: "MOB",
-    description: "Manage MOB data.",
+    title: "POB",
+    description: "Manage POB data.",
     properties: {
     }
   }
@@ -137,8 +137,8 @@ module.exports = function (app) {
 
 
                       let body = {
-                        "name": "MOB_" + timeStamp.toISOString(),
-                        "description": "Men Over Board",
+                        "name": "POB_" + timeStamp.toISOString(),
+                        "description": "Person Over Board",
                         "feature": {
                           "type": "Feature",
                           "geometry": {
@@ -153,7 +153,7 @@ module.exports = function (app) {
                           },
                           "id": resourceId
                         },
-                        "type": "MOB"
+                        "type": "POB"
                       }
 
                       app.resourcesApi.setResource('waypoints', resourceId, body).then(() => {

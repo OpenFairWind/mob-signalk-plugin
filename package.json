@@ -1,6 +1,6 @@
 {
   "author": "raffaele.montella@uniparthenope.it",
-  "description": "Men Over Board Signal K server plugin",
+  "description": "Person Over Board Signal K server plugin",
   "dependencies": {
     "baconjs": "^3.0.19",
     "geolib": "^3.3.4",
