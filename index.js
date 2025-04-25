@@ -88,7 +88,7 @@ module.exports = function (app) {
           context: 'vessels.self',
           subscribe: [
             {
-              path: 'notifications.mob',
+              path: 'notifications.mob.*',
               period: subscriptionPeriod
             }]
         },
@@ -122,7 +122,7 @@ module.exports = function (app) {
                 update.values.forEach((vp) => {
 
                   // Check if the value path is "notifications.mob" (potentially pleonastic)
-                  if (vp.path === 'notifications.mob') {
+                  if (vp.path.startsWith('notifications.mob')) {
 
                     // Check if the state is "emergency" and no other mob is active
                     if (!mobNotification && "state" in vp.value && vp.value.state === "emergency") {
@@ -130,22 +130,23 @@ module.exports = function (app) {
                       // Save the mob notification
                       mobNotification = vp.value
 
+                      // Create the resource id
                       let resourceId = uuidv4();
 
+                      // Create the timestamp
                       let timeStamp = new Date()
 
-
-
+                      // Create the http request body
                       let body = {
                         "name": "POB_" + timeStamp.toISOString(),
-                        "description": "Person Over Board",
+                        "description": mobNotification.message,
                         "feature": {
                           "type": "Feature",
                           "geometry": {
                             "type": "Point",
                             "coordinates": [
-                              vp.value.data.position.longitude,
-                              vp.value.data.position.latitude
+                              mobNotification.position.longitude,
+                              mobNotification.position.latitude
                             ]
                           },
                           "properties": {
@@ -153,30 +154,40 @@ module.exports = function (app) {
                           },
                           "id": resourceId
                         },
-                        "type": "POB"
+                        "type": "alarm-mob"
                       }
 
+                      // Add the new waypoint
                       app.resourcesApi.setResource('waypoints', resourceId, body).then(() => {
 
+                        // Get the course reference
                         app.getCourse().then((course) => {
 
+                          // Save the current next waypoint
                           nextPoint = course.nextPoint
 
+                          // Set the new destination to POB
                           app.setDestination({
                             href: '/resources/waypoints/' + resourceId
                           })
                         })
-
                       })
-
-
 
                       // Check if is active a mob and the new state is "normal"
                     } else if (mobNotification && "state" in vp.value && vp.value.state === "normal") {
 
+                      // Check if the next waypoint is defined
                       if (nextPoint) {
+
+                        // Restore the destination
                         app.setDestination(nextPoint);
+
+                        // Clear the next waypoint
+                        nextPoint = null
+
                       } else {
+
+                        // Clear the destination
                         app.clearDestination()
                       }
 
