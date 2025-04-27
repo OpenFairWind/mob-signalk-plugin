@@ -131,7 +131,10 @@ module.exports = function (app) {
                       mobNotification = vp.value
 
                       // Create the resource id
-                      let resourceId = uuidv4();
+                      //let resourceId = uuidv4();
+
+                      // Reuse the notification id as waypoint id
+                      let resourceId = vp.path.replace("notifications.mob.", "")
 
                       // Create the timestamp
                       let timeStamp = new Date()
